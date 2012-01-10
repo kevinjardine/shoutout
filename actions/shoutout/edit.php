@@ -3,8 +3,6 @@ elgg_load_library('elgg:shoutout');
 $guid = get_input('guid',0);
 $text = get_input('text');
 $attachments = get_input('attachments');
-error_log("attachments: ".print_r($attachments,TRUE));
-//$attachments = json_decode($attachments);
 if ($content = shoutout_edit($guid,$text,$attachments)) {
 	$response = array('success' => TRUE, 'msg' => elgg_echo('shoutout:edit:success'), 'html'=>$content);
 } else {

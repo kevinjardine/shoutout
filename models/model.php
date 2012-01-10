@@ -463,7 +463,7 @@ function shoutout_delete($guid) {
 	if ($attachments) {
 		foreach($attachments as $a) {
 			list($time_bit,$ofn) = explode("|",$a->value);
-			shoutout_attach_delete($shoutout->guid,$time_bit,$ofn);
+			shoutout_attach_delete($a->owner_guid,$time_bit,$ofn);
 		}
 	}
 	return $shoutout->delete();

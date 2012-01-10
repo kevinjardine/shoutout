@@ -67,6 +67,9 @@ function shoutout_page_handler($page) {
 		case 'activity':
 			echo shoutout_get_activity_page();
 			break;
+		case 'activity_river_view':
+			echo shoutout_get_activity();
+			break;
 		case 'view':
 			echo shoutout_get_view_page($page[1]);
 			break;
@@ -133,7 +136,8 @@ function shoutout_river_menu_setup($hook, $type, $return, $params) {
 				'text' => elgg_view_icon('delete'),
 				'title' => elgg_echo('delete:this'),
 				'href' => "action/shoutout/delete?guid={$object->guid}",
-				'confirm' => elgg_echo('deleteconfirm'),
+//				'confirm' => elgg_echo('deleteconfirm'),
+				'link_class' => 'shoutout-delete-link',
 				'priority' => 300,
 			);
 			$return[] = ElggMenuItem::factory($options);

@@ -1,11 +1,13 @@
 <?php
-// TODO - make this ajaxy?
+// AJAXy delete action
 elgg_load_library('elgg:shoutout');
 $guid = get_input('guid');
 if (shoutout_delete($guid)) {
-	system_message(elgg_echo('shoutout:delete:success'));
+	$response = array('success' => TRUE, 'msg' => elgg_echo('shoutout:delete:success'));
 } else {
-	register_error(elgg_echo('shoutout:delete:error'));
+	$response = array('success' => FALSE, 'msg' => elgg_echo('shoutout:delete:error'));
 }
 
-forward('shoutout/activity');
+echo json_encode($response);
+
+exit;

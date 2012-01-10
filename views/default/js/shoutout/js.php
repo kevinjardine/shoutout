@@ -9,6 +9,7 @@ elgg.shoutout.init = function () {
 	$('.shoutout-countdown').keyup(elgg.shoutout.handleCountdownFieldsUpdate);
 
 	$('.shoutout-post-button').click(elgg.shoutout.handlePost);
+	$('.shoutout-delete-link').live('click',elgg.shoutout.handleDelete);
 	$('.shoutout-attachment-delete').live('click',elgg.shoutout.handleAttachmentDelete);
 
 	var uploader = new qq.FileUploader({
@@ -50,6 +51,25 @@ elgg.shoutout.init = function () {
 elgg.shoutout.handleAttachmentDelete = function(event) {
 	elgg.action($(this).attr('href'));
 	$(this).parent().parent().hide();
+	event.preventDefault();
+	return false;
+}
+
+elgg.shoutout.handleDelete = function(event) {
+	var confirmText = $(this).attr('rel') || elgg.echo('question:areyousure');
+	if (confirm(confirmText)) {
+		elgg.action($(this).attr('href'),{success: 
+			function(response) {
+				if (response.success) {
+					$('#shoutout-content-area').load(elgg.get_site_url()+'shoutout/activity_river_view');
+					elgg.system_message(response.msg);
+				} else {
+					elgg.register_error(response.msg);
+				}
+			}
+		});
+	}	
+	
 	event.preventDefault();
 	return false;
 }
