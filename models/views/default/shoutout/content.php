@@ -1,0 +1,1 @@
+<div id="shoutout-content-area"></div>

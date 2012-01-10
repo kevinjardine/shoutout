@@ -11,8 +11,8 @@ function shoutout_init() {
 	elgg_register_library('elgg:shoutout:uploads', elgg_get_plugins_path() . 'shoutout/models/uploads.php');
 
 	// add a site navigation item
-	//$item = new ElggMenuItem('shoutout', elgg_echo('shoutout:shoutouts'), 'shoutout/activity');
-	//elgg_register_menu_item('site', $item);
+	$item = new ElggMenuItem('shoutout', elgg_echo('shoutout:shoutouts'), 'shoutout/activity');
+	elgg_register_menu_item('site', $item);
 
 	// add to the main css
 	elgg_extend_view('css/elgg', 'shoutout/css');
