@@ -26,6 +26,9 @@ $english = array(
 	'shoutout:settings:no' => "No",
 	'shoutout:settings:overide_activity:title' => "Overide title and default filter on Activity page",
 	'shoutout:settings:max_attachments:title' => "Number of attachments allowed per shoutout (-1 for no limit)",
+	'shoutout:settings:whitelist:title' => "Permitted file extensions",
+	'shoutout:settings:size_limit:title' => "Maximum attachment size (bytes)",
+ 
 );
 
 add_translation("en", $english);

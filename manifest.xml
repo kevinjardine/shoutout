@@ -6,7 +6,7 @@
 	<category>third-party</category>
 	<category>content</category>
 	<blurb>Shoutout</blurb>
-	<description>Adds an activity-river-like shoutout system.</description>
+	<description>Adds the ability to attach content directly to the river.</description>
 	<website>http://radagast.biz/</website>
 	<copyright>(C) Radagast Solutions 2009-2011</copyright>
 	<license>GNU Public License version 2</license>

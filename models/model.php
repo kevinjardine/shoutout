@@ -15,16 +15,17 @@ function shoutout_get_all_page() {
 }
 
 function shoutout_get_view_page($guid) {
+	elgg_extend_view('forms/comments/add','shoutout/add_river_flag');
 	$title = elgg_echo('shoutout:view_title');
 	$shoutout = get_entity($guid);
 	if (elgg_instanceof($shoutout,'object','shoutout')) {
-		$content = '<div class="shoutout-view-wrapper">'.$shoutout->description.'</div>';
+		$content = '<div class="shoutout-view-wrapper">'.parse_urls($shoutout->description).'</div>';
 		$content .= shoutout_get_attachment_listing($shoutout);
 		$content .= elgg_view_comments($shoutout);
 	} else {
 		$content = elgg_echo('shoutout:bad_shoutout');
 	}
-	elgg_push_breadcrumb(elgg_echo('shoutout:listing_title'),'shoutouts/activity');
+	elgg_push_breadcrumb(elgg_echo('shoutout:listing_title'),'shoutout/activity');
 	$params = array('title' => $title, 'content' => $content,'filter' => '');
 
 	$body = elgg_view_layout("content", $params);
@@ -83,17 +84,16 @@ function shoutout_edit($guid,$text,$attachments) {
 		if ($attachments) {
 			foreach ($attachments as $a) {
 				$time_bit = $a['timeBit'];
-				$file_name = $a['fileName'];
+				$file_name = urldecode($a['fileName']);
 				$value = "$time_bit|$file_name";
 				create_annotation($shoutout->guid, 'shoutout_attachment', $value,'',$user_guid, ACCESS_PUBLIC);
 			}
 		}
 		if(!$guid) {
 			add_to_river('river/object/shoutout/create', 'create', elgg_get_logged_in_user_guid(), $shoutout->guid);
-			return shoutout_get_activity();
-		} else {
-			return TRUE;
-		}		
+			//return shoutout_get_activity();
+		}
+		return TRUE;
 	} else {
 		return FALSE;
 	}
@@ -102,17 +102,27 @@ function shoutout_edit($guid,$text,$attachments) {
 function shoutout_attach_add($original_name) {
 	elgg_load_library('elgg:shoutout:uploads');
 	$owner_guid = elgg_get_logged_in_user_guid();
-	if ($owner_guid) {
-		$filestorename = strtolower(time().$original_name);		
+	if ($owner_guid) {	
 		$user_dir = elgg_get_data_path() . shoutout_attach_make_file_matrix($owner_guid);
 		if (shoutout_attach_setup_directory($user_dir)) {
 			$attachment_dir = $user_dir .'/attachments/'.time().'/';
 			if (shoutout_attach_setup_directory($attachment_dir)) {
 				//$location = $attachment_dir . $filestorename;
 				// list of valid extensions, ex. array("jpeg", "xml", "bmp")
-				$allowedExtensions = array('png','jpg','gif','jpeg','jpe');
+				$whitelist = elgg_get_plugin_setting('whitelist','shoutout');
+				if ($whitelist) {
+					$allowedExtensions = array();
+					foreach(explode(',',$whitelist) as $ext) {
+						$allowedExtensions[] = trim($ext);
+					}
+				} else {
+					$allowedExtensions = array('png','gif','jpg','jpeg');
+				}
 				// max file size in bytes
-				$sizeLimit = 2 * 1024 * 1024;
+				$sizeLimit = elgg_get_plugin_setting('size_limit','shoutout');
+				if (!$sizeLimit) {
+					$sizeLimit = 2 * 1024 * 1024;
+				}
 				$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 				$result = $uploader->handleUpload($attachment_dir);
 				
@@ -226,12 +236,17 @@ function shoutout_attach_make_file_matrix($guid) {
 	return "$time_created/$guid";
 }
 
-function shoutout_show_temporary_attachment($guid,$time_bit,$fn) {
+function shoutout_show_temporary_attachment($guid,$time_bit,$ofn) {
 	// security - only admins and that attachment owner get to see this
 	if (elgg_is_admin_logged_in() || (elgg_get_logged_in_user_guid() == $guid)) {
-		header("Content-Type: image/jpg");
+		$pathinfo = pathinfo($ofn);
+        $fn = $pathinfo['filename'];
+        $ext = $pathinfo['extension'];
+        header("Content-Type: image/jpg");
 		header("Content-Disposition: inline; filename=\"$fn.jpg\"");
-		$content = file_get_contents(elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn.'.jpg');
+        if (in_array($ext, array('png','jpg','jpeg','gif'))) {		
+			$content = file_get_contents(elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn.'.jpg');
+        }
 		//echo elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn;
 		$splitString = str_split($content, 8192);
 		foreach($splitString as $chunk) {
@@ -242,6 +257,7 @@ function shoutout_show_temporary_attachment($guid,$time_bit,$fn) {
 }
 
 function shoutout_get_activity() {
+	elgg_extend_view('forms/comments/add','shoutout/add_river_flag');
 	$options = array();
 	
 	$override_activity = elgg_get_plugin_setting('override_activity','shoutout');
@@ -296,10 +312,10 @@ function shoutout_get_activity() {
 			break;
 	}
 	
-	$filter = elgg_view('core/river/filter', array('selector' => $selector));
+	
 	$activity = elgg_list_river($options);
 	
-	return array('title'=> $title, 'content' => $filter . $activity);
+	return array('title'=> $title, 'content' => $filter . $activity, 'page_filter'=>$page_filter,'selector'=>$selector);
 	
 }
 
@@ -321,11 +337,14 @@ function shoutout_get_activity_page() {
 	
 	$sidebar = elgg_view('core/river/sidebar');
 	
+	$filter_tabs = elgg_view('page/layouts/content/filter',array('filter_context' => $activity['page_filter']));
+	$filter_dropdown = $filter = elgg_view('core/river/filter', array('selector' => $activity['selector']));
+	
 	$params = array(
-		'content' =>  $content . $activity_bit,
+		'content' =>  $content . $filter_dropdown . $filter_tabs . $activity_bit,
 		'title' => $activity['title'],
 		'sidebar' => $sidebar,
-		'filter_context' => $page_filter,
+		'filter' => '',
 		'class' => 'elgg-river-layout',
 	);
 	
@@ -362,15 +381,17 @@ function shoutout_attachment_listing($entity_guid,$annotation) {
     	$fn = $pathinfo['filename'];
     	$ext = $pathinfo['extension'];
 	
-		$title_bit = " title = \"$fn\" alt=\"$fn\" ";
+		$title_bit = " title = \"$ofn\" alt=\"$ofn\" ";
 		$body = '<div class="shoutout-attachment-listing-item">';
-			
+		
 		if (in_array($ext, array('png','jpg','jpeg','gif'))) {
-			$image = '<img class="shoutout-attachment-image" '.$title_bit.'src="'.$url.'shoutout/show_attachment_image/'.$annotation->id.'">';
+			$thumb = $url.'shoutout/show_attachment_image/'.$annotation->id;
 		} else {
-			//TODO: make this less generic based on the extension
-			$image = '<img class="shoutout-attachment-image" '.$title_bit.'src="'.$url.'mod/file/graphics/icons/general.gif">';
-		}
+			$mime_type = shoutout_determine_mime_type($ofn);
+			$thumb = shoutout_get_file_icon_url($mime_type);
+		}			
+		$image = '<img class="shoutout-attachment-image" '.$title_bit.'src="'.$thumb.'">';
+		
 		$body .= '<a href="'.$url.'shoutout/download_attachment/'.$annotation->id.'">'.$image.'</a>'.' '.$ofn;
 		$body .= '</div>';		
 	}
@@ -406,25 +427,7 @@ function shoutout_download_attachment($annotation_id) {
 			list($time_bit,$ofn) = explode('|',$annotation->value);
 			$full_file_path = elgg_get_data_path().shoutout_attach_make_file_matrix($annotation->owner_guid).'/attachments/'.$time_bit.'/'.$ofn;
 			// determine mime type
-			$mime_type = '';
-			if (function_exists('finfo_open')) {
-				$finfo = finfo_open();     
-	    		$mime_type = finfo_file($finfo, $full_file_path, FILEINFO_MIME);     
-	    		finfo_close($finfo);
-			} else if (function_exists('mime_content_type')) {
-				$mime_type = mime_content_type($full_file_path);
-			} else {
-				$pathinfo = pathinfo($full_file_path);
-		    	$ext = $pathinfo['extension'];					
-				if (in_array($ext, array('png','jpg','jpeg','gif'))) {
-					$mime_type = "image/$ext";
-				}
-			}
-			
-			if (!$mime_type) {
-				$mime_type = 'application/octet-stream';
-			}
-
+			$mime_type = shoutout_determine_mime_type($full_file_path);
 			header("Content-Type: $mime_type");
 			header("Content-Disposition: attachment; filename=\"$ofn\"");
 			$content = file_get_contents($full_file_path);
@@ -435,6 +438,84 @@ function shoutout_download_attachment($annotation_id) {
 		}
 	}
 	exit;
+}
+
+function shoutout_get_file_icon_url($mime) {
+	error_log("mime type: $mime");
+	$mapping = array(
+		'application/excel' => 'excel',
+		'application/msword' => 'word',
+		'application/pdf' => 'pdf',
+		'application/powerpoint' => 'ppt',
+		'application/vnd.ms-excel' => 'excel',
+		'application/vnd.ms-powerpoint' => 'ppt',
+		'application/vnd.oasis.opendocument.text' => 'openoffice',
+		'application/x-gzip' => 'archive',
+		'application/x-rar-compressed' => 'archive',
+		'application/x-stuffit' => 'archive',
+		'application/zip' => 'archive',
+
+		'text/directory' => 'vcard',
+		'text/v-card' => 'vcard',
+
+		'application' => 'application',
+		'audio' => 'music',
+		'text' => 'text',
+		'video' => 'video',
+	);
+	
+	if ($mime) {
+		$base_type = substr($mime, 0, strpos($mime, '/'));
+	} else {
+		$mime = 'none';
+		$base_type = 'none';
+	}
+
+	if (isset($mapping[$mime])) {
+		$type = $mapping[$mime];
+	} elseif (isset($mapping[$base_type])) {
+		$type = $mapping[$base_type];
+	} else {
+		$type = 'general';
+	}
+
+	if ($size == 'large') {
+		$ext = '_lrg';
+	} else {
+		$ext = '';
+	}
+	
+	$url = "mod/file/graphics/icons/{$type}{$ext}.gif";
+	
+	return $url;
+}
+
+function shoutout_determine_mime_type($full_file_path) {
+	$mime_type = '';
+	error_log("Full file path: $full_file_path");
+	if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
+		error_log('using finfo_file');
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		if ($finfo) {
+			$mime_type = finfo_file($finfo, $full_file_path, FILEINFO_MIME);
+		}		
+		finfo_close($finfo);
+	} else if (function_exists('mime_content_type')) {
+		error_log('using mime_content_type');
+		$mime_type = mime_content_type($full_file_path);
+	} else {
+		error_log('failed to find mime type functions');
+		$pathinfo = pathinfo($full_file_path);
+		$ext = $pathinfo['extension'];
+		if (in_array($ext, array('png','jpg','jpeg','gif'))) {
+			$mime_type = "image/$ext";
+		}
+	}
+	if (!$mime_type) {
+		$mime_type = 'application/octet-stream';
+	}
+	
+	return $mime_type;
 }
 
 function shoutout_get_file_uploader_bit($guid) {
@@ -486,4 +567,82 @@ function shoutout_delete($guid) {
 		}
 	}
 	return $shoutout->delete();
+}
+
+// hack for some systems
+
+if(!function_exists('mime_content_type')) {
+
+    function mime_content_type($filename) {
+
+        $mime_types = array(
+
+            'txt' => 'text/plain',
+            'htm' => 'text/html',
+            'html' => 'text/html',
+            'php' => 'text/html',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'json' => 'application/json',
+            'xml' => 'application/xml',
+            'swf' => 'application/x-shockwave-flash',
+            'flv' => 'video/x-flv',
+
+            // images
+            'png' => 'image/png',
+            'jpe' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'jpg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/vnd.microsoft.icon',
+            'tiff' => 'image/tiff',
+            'tif' => 'image/tiff',
+            'svg' => 'image/svg+xml',
+            'svgz' => 'image/svg+xml',
+
+            // archives
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+            'exe' => 'application/x-msdownload',
+            'msi' => 'application/x-msdownload',
+            'cab' => 'application/vnd.ms-cab-compressed',
+
+            // audio/video
+            'mp3' => 'audio/mpeg',
+            'qt' => 'video/quicktime',
+            'mov' => 'video/quicktime',
+
+            // adobe
+            'pdf' => 'application/pdf',
+            'psd' => 'image/vnd.adobe.photoshop',
+            'ai' => 'application/postscript',
+            'eps' => 'application/postscript',
+            'ps' => 'application/postscript',
+
+            // ms office
+            'doc' => 'application/msword',
+            'rtf' => 'application/rtf',
+            'xls' => 'application/vnd.ms-excel',
+            'ppt' => 'application/vnd.ms-powerpoint',
+
+            // open office
+            'odt' => 'application/vnd.oasis.opendocument.text',
+            'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+        );
+
+        $ext = strtolower(array_pop(explode('.',$filename)));
+        if (array_key_exists($ext, $mime_types)) {
+            return $mime_types[$ext];
+        }
+        elseif (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME);
+            $mimetype = finfo_file($finfo, $filename);
+            finfo_close($finfo);
+            return $mimetype;
+        }
+        else {
+            return 'application/octet-stream';
+        }
+    }
 }

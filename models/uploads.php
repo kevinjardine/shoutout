@@ -26,7 +26,7 @@ class qqUploadedFileXhr {
         return true;
     }
     function getName() {
-        return $_GET['qqfile'];
+        return urldecode($_GET['qqfile']);
     }
     function getSize() {
         if (isset($_SERVER["CONTENT_LENGTH"])){
@@ -52,7 +52,7 @@ class qqUploadedFileForm {
         return true;
     }
     function getName() {
-        return $_FILES['qqfile']['name'];
+        return urldecode($_FILES['qqfile']['name']);
     }
     function getSize() {
         return $_FILES['qqfile']['size'];
@@ -106,6 +106,7 @@ class qqFileUploader {
      * Returns array('success'=>true) or array('error'=>'error message')
      */
     function handleUpload($uploadDirectory, $replaceOldFile = FALSE){
+    	elgg_load_library('elgg:shoutout');
         if (!is_writable($uploadDirectory)){
             return array('error' => "Server error. Upload directory isn't writable.");
         }
@@ -124,6 +125,8 @@ class qqFileUploader {
             return array('error' => 'File is too large');
         }
         
+        error_log("File name:".$this->file->getName());
+        
         $pathinfo = pathinfo($this->file->getName());
         $filename = $pathinfo['filename'];
         //$filename = md5(uniqid());
@@ -141,11 +144,18 @@ class qqFileUploader {
             }
         }
         
-        if ($this->file->save($uploadDirectory . $filename . '.' . $ext)){
+        $full_file_path = $uploadDirectory . $filename . '.' . $ext;
+        
+        if ($this->file->save($full_file_path)){
         	$guid = elgg_get_logged_in_user_guid();
         	$upload_bits = explode('/',$uploadDirectory);
         	$time_bit = $upload_bits[count($upload_bits)-2];
-        	$thumb = elgg_get_site_url().'shoutout/temporary_thumb/'.$guid.'/'.$time_bit.'/'.$filename;
+        	if (in_array($ext, array('png','jpg','jpeg','gif'))) {
+        		$thumb = elgg_get_site_url().'shoutout/temporary_thumb/'.$guid.'/'.$time_bit.'/'.$filename. '.' . $ext;
+        	} else {
+        		$mime_type = shoutout_determine_mime_type($full_file_path);
+        		$thumb = shoutout_get_file_icon_url($mime_type);
+        	}
         	$delete = 'action/shoutout/attach/delete?guid='.$guid.'&time_bit='.$time_bit.'&filename='.$filename . '.' . $ext;
             return array('success'=>true,'uploadDirectory'=>$time_bit,'thumb'=>$thumb,'delete'=>$delete);
         } else {

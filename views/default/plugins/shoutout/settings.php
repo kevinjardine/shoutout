@@ -20,6 +20,30 @@ $body .= elgg_view('input/radio',array('name'=>'params[override_activity]','valu
 
 $body .= '<br />';
 
+$shoutout_white_list = elgg_get_plugin_setting('whitelist', 'shoutout');
+if (!$shoutout_white_list) {
+	$shoutout_white_list = 'gif, png, jpg, jpeg';
+}
+
+$body .= elgg_echo('shoutout:settings:whitelist:title');
+$body .= '<br />';
+$body .= elgg_view('input/text',array('name'=>'params[whitelist]','value'=>$shoutout_white_list));
+
+
+$body .= '<br /><br />';
+
+$shoutout_size_limit = elgg_get_plugin_setting('size_limit', 'shoutout');
+if (!$shoutout_size_limit) {
+	$shoutout_size_limit = 2 * 1024 * 1024;
+}
+
+$body .= elgg_echo('shoutout:settings:size_limit:title');
+$body .= '<br />';
+$body .= elgg_view('input/text',array('name'=>'params[size_limit]','value'=>$shoutout_size_limit));
+
+
+$body .= '<br /><br />';
+
 $shoutout_max_attachments = elgg_get_plugin_setting('max_attachments', 'shoutout');
 if (!$shoutout_max_attachments) {
 	$shoutout_max_attachments = -1;

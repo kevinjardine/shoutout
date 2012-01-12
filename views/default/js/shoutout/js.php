@@ -12,6 +12,15 @@ elgg.shoutout.init = function () {
 	$('.shoutout-delete-link').live('click',elgg.shoutout.handleDelete);
 	$('.shoutout-attachment-delete').live('click',elgg.shoutout.handleAttachmentDelete);
 
+	elgg.shoutout.resetFileUploader();
+		
+	var guid = $('#shoutout-guid').val();
+	if (guid > 0) {
+		$(".qq-upload-list").load(elgg.get_site_url()+'shoutout/get_file_uploader_bit/'+guid);
+	}
+}
+
+elgg.shoutout.resetFileUploader = function() {
 	var uploader = new qq.FileUploader({
 	    // pass the dom node (ex. $(selector)[0] for jQuery users)
 	    element: document.getElementById('shoutout-file-uploader'),
@@ -42,10 +51,6 @@ elgg.shoutout.init = function () {
 	            fail: 'qq-upload-fail'
 	        }
 	});
-	var guid = $('#shoutout-guid').val();
-	if (guid > 0) {
-		$(".qq-upload-list").load(elgg.get_site_url()+'shoutout/get_file_uploader_bit/'+guid);
-	}
 }
 
 elgg.shoutout.handleAttachmentDelete = function(event) {
@@ -85,7 +90,9 @@ elgg.shoutout.handlePost = function() {
 	var attachments = [];
 	$.each($('.qq-upload-list').children().filter(":visible"), function() {
 		var c = $(this).children();
-		attachments.push({timeBit: c.filter('.qq-upload-dir').html(), fileName: c.filter('.qq-upload-file').html()});
+		if (c.filter('.qq-upload-failed-text').is(':hidden')) {
+			attachments.push({timeBit: c.filter('.qq-upload-dir').html(), fileName: c.filter('.qq-upload-file').html()});
+		}
 	});
 	var content = {attachments: attachments, text: $("[name='shoutout_text']").val(), guid: $('#shoutout-guid').val()};
 	elgg.action('action/shoutout/edit', {data: content, success : 
@@ -95,10 +102,18 @@ elgg.shoutout.handlePost = function() {
 					if (guid > 0) {
 						elgg.forward('shoutout/all');
 					} else {
-						$('#shoutout-content-area').html(response.html);
+
+						// reload activity view
+						$('#shoutout-content-area').load(elgg.get_site_url()+'shoutout/activity_river_view');
+						
+						// reset form
 						$('[name="shoutout_text"]').val('');
 						$("#shoutout-countdown-remaining").html('500');
-						$('.qq-upload-list').children().remove();					
+						$('.qq-upload-list').children().remove();
+						$('.shoutout-number-of-attachments').val(0);
+						elgg.shoutout.resetFileUploader();
+
+						// show success message					
 						elgg.system_message(response.msg);
 					}
 				} else {

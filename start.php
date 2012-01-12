@@ -34,6 +34,9 @@ function shoutout_init() {
 	elgg_register_plugin_hook_handler('register', 'menu:river', 'shoutout_river_menu_setup');
 	
 	elgg_register_entity_type('object','shoutout');
+	
+	// override the default url to view a blog object
+	elgg_register_entity_url_handler('object', 'shoutout', 'shoutout_url_handler');
 
 	// register actions
 	$action_path = elgg_get_plugins_path() . 'shoutout/actions/shoutout';
@@ -41,7 +44,9 @@ function shoutout_init() {
 	elgg_register_action('shoutout/delete', "$action_path/delete.php");
 	elgg_register_action('shoutout/attach/add', "$action_path/attach/add.php");
 	elgg_register_action('shoutout/attach/delete', "$action_path/attach/delete.php");
-	elgg_register_action('shoutout/comment/add', "$action_path/comment/add.php");
+	
+	// over-ride comments action
+	elgg_register_action('comments/add', elgg_get_plugins_path() . 'shoutout/actions/comments/add.php');
 }
 
 /**
@@ -70,10 +75,12 @@ function shoutout_page_handler($page) {
 			break;
 		case 'owner':
 			// TODO: get this working
+			set_input('page_type','mine');
 			echo shoutout_get_activity_page();
 			break;
 		case 'friends':
 			// TODO: get this working
+			set_input('page_type','friends');
 			echo shoutout_get_activity_page();
 			break;
 		case 'activity_river_view':
@@ -90,7 +97,7 @@ function shoutout_page_handler($page) {
 			echo shoutout_get_comment_page($page[1]);
 			break;
 		case 'temporary_thumb':
-			echo shoutout_show_temporary_attachment($page[1],$page[2],$page[3]);
+			echo shoutout_show_temporary_attachment($page[1],$page[2],urldecode($page[3]));
 			break;
 		case 'show_attachment_image':
 			shoutout_show_attachment_image($page[1]);
