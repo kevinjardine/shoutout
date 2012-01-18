@@ -70,7 +70,7 @@ function shoutout_edit($guid,$text,$attachments) {
 	} else {
 		$shoutout = new ElggObject();
 		$shoutout->subtype = 'shoutout';
-		$shoutout->access_id = ACCESS_PUBLIC;
+		$shoutout->access_id = ACCESS_LOGGED_IN;
 		$shoutout->owner_guid = $user_guid;
 		$shoutout->container_guid = $user_guid;
 	}
@@ -86,7 +86,7 @@ function shoutout_edit($guid,$text,$attachments) {
 				$time_bit = $a['timeBit'];
 				$file_name = urldecode($a['fileName']);
 				$value = "$time_bit|$file_name";
-				create_annotation($shoutout->guid, 'shoutout_attachment', $value,'',$user_guid, ACCESS_PUBLIC);
+				create_annotation($shoutout->guid, 'shoutout_attachment', $value,'',$user_guid, ACCESS_LOGGED_IN);
 			}
 		}
 		if(!$guid) {
