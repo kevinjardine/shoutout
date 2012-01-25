@@ -72,4 +72,29 @@
 	padding-top: 0;
 	margin-bottom: 0;
 	margin-top: 0;
+	vertical-align: middle;
+}
+
+.shoutout-attached-entity-wrapper .elgg-icon-delete {
+	float: right;
+}
+
+.shoutout-attached-entity-wrapper {
+	border: 1px solid #CCCCCC;
+	width: 400px;
+	padding: 5px;
+}
+
+.shoutout-access-box {
+	clear: both;
+}
+
+.shoutout-access-label {
+	font-weight: bold;
+}
+
+#shoutout-access-id {
+	margin-top: 0;
+	margin-left: 10px;
+	float: none;
 }

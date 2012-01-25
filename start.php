@@ -16,11 +16,18 @@ function shoutout_init() {
 
 	// add to the main css
 	elgg_extend_view('css/elgg', 'shoutout/css');
+	
+	// add extend link js to poll plugin
+	elgg_extend_view('object/poll','shoutout/add_link');
 
 	// register the JavaScript
 	$js = elgg_get_simplecache_url('js', 'shoutout/js');
 	elgg_register_simplecache_view('js/shoutout/js');
 	elgg_register_js('elgg.shoutout', $js);
+	
+	$js = elgg_get_simplecache_url('js', 'shoutout/link');
+	elgg_register_simplecache_view('js/shoutout/link');
+	elgg_register_js('elgg.shoutout_link', $js);
 
 	$js = elgg_get_simplecache_url('js', 'shoutout/fileuploader');
 	elgg_register_simplecache_view('js/shoutout/fileuploader');
@@ -72,6 +79,10 @@ function shoutout_page_handler($page) {
 			break;
 		case 'activity':
 			echo shoutout_get_activity_page();
+			break;
+		case 'shout_entity':
+			// allows attaching entities to shoutouts, eg. polls
+			echo shoutout_get_activity_page($page[1]);
 			break;
 		case 'owner':
 			// TODO: get this working

@@ -5,7 +5,10 @@ function shoutout_get_all_page() {
 	elgg_load_js('qq.fileuploader');
 	$title = elgg_echo('shoutout:listing_title');
 	$form_vars = array('id' => 'shoutout-form');
-	$content = elgg_view_form('shoutout/edit',$form_vars);
+	$content = '';
+	if (elgg_is_logged_in()) {
+		$content .= elgg_view_form('shoutout/edit',$form_vars);
+	}
 	$content .= elgg_view('shoutout/content');
 	$params = array('title' => $title, 'content' => $content,'filter' => '');
 
@@ -43,7 +46,7 @@ function shoutout_get_edit_page($guid) {
 	$body_vars = array();
 	if ($guid) {
 		$entity = get_entity($guid);
-		if (elgg_instanceof($entity,'object','shoutout')) {
+		if (elgg_instanceof($entity,'object','shoutout') && $entity->canEdit()) {
 			$body_vars['entity'] = $entity;
 			$content = elgg_view_form('shoutout/edit',$form_vars,$body_vars);
 		} else {
@@ -60,7 +63,7 @@ function shoutout_get_edit_page($guid) {
 	
 }
 
-function shoutout_edit($guid,$text,$attachments) {
+function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments) {
 	$user_guid = elgg_get_logged_in_user_guid();
 	if ($guid) {
 		$shoutout = get_entity($guid);
@@ -70,16 +73,18 @@ function shoutout_edit($guid,$text,$attachments) {
 	} else {
 		$shoutout = new ElggObject();
 		$shoutout->subtype = 'shoutout';
-		$shoutout->access_id = ACCESS_PUBLIC;
 		$shoutout->owner_guid = $user_guid;
 		$shoutout->container_guid = $user_guid;
 	}
+	$shoutout->access_id = $access_id;
 	$shoutout->description = $text;
 	
 	if($shoutout->save()) {
 		if ($guid) {
 			// clear attachment annotations
 			elgg_delete_annotations(array('guid' => $guid,'annotation_name'=> 'shoutout_attachment'));
+			// clear attached entity
+			remove_entity_relationships($guid, 'shoutout_attached_entity');
 		}
 		if ($attachments) {
 			foreach ($attachments as $a) {
@@ -89,9 +94,11 @@ function shoutout_edit($guid,$text,$attachments) {
 				create_annotation($shoutout->guid, 'shoutout_attachment', $value,'',$user_guid, ACCESS_PUBLIC);
 			}
 		}
+		if ($attached_guid) {
+			add_entity_relationship($shoutout->guid, 'shoutout_attached_entity', $attached_guid);
+		}
 		if(!$guid) {
 			add_to_river('river/object/shoutout/create', 'create', elgg_get_logged_in_user_guid(), $shoutout->guid);
-			//return shoutout_get_activity();
 		}
 		return TRUE;
 	} else {
@@ -310,8 +317,7 @@ function shoutout_get_activity() {
 			$title = $river_all_title;
 			$page_filter = 'all';
 			break;
-	}
-	
+	}	
 	
 	$activity = elgg_list_river($options);
 	
@@ -319,7 +325,7 @@ function shoutout_get_activity() {
 	
 }
 
-function shoutout_get_activity_page() {
+function shoutout_get_activity_page($attached_guid = 0) {
 	/**
 	 * Main activity stream list page
 	 */
@@ -332,8 +338,14 @@ function shoutout_get_activity_page() {
 
 	$activity_bit = '<div id="shoutout-content-area">'.$activity['content'].'</div>';
 	
-	$form_vars = array('id' => 'shoutout-form');
-	$content .= elgg_view_form('shoutout/edit',$form_vars);
+	if (elgg_is_logged_in()) {
+		$form_vars = array('id' => 'shoutout-form');
+		$body_vars = array('attached_guid'=>$attached_guid);
+	
+		$content .= elgg_view_form('shoutout/edit',$form_vars,$body_vars);
+	} else {
+		$content .= '<p>'.elgg_echo('shoutout:login').'</p>';
+	}
 	
 	$sidebar = elgg_view('core/river/sidebar');
 	
@@ -368,8 +380,6 @@ function shoutout_get_attachment_listing($entity) {
 }
 
 function shoutout_attachment_listing($entity_guid,$annotation) {
-	global $CONFIG;
-	
 	$body = '';
 	$token = $annotation->value;
 	
@@ -392,7 +402,7 @@ function shoutout_attachment_listing($entity_guid,$annotation) {
 		}			
 		$image = '<img class="shoutout-attachment-image" '.$title_bit.'src="'.$thumb.'">';
 		
-		$body .= '<a href="'.$url.'shoutout/download_attachment/'.$annotation->id.'">'.$image.'</a>'.' '.$ofn;
+		$body .= '<a href="'.$url.'shoutout/download_attachment/'.$annotation->id.'">'.$image.' '.$ofn.'</a>';
 		$body .= '</div>';		
 	}
 	

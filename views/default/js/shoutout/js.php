@@ -11,6 +11,7 @@ elgg.shoutout.init = function () {
 	$('.shoutout-post-button').click(elgg.shoutout.handlePost);
 	$('.shoutout-delete-link').live('click',elgg.shoutout.handleDelete);
 	$('.shoutout-attachment-delete').live('click',elgg.shoutout.handleAttachmentDelete);
+	$('.shoutout-attached-entity-remove').live('click',elgg.shoutout.removeAttachedEntity);
 
 	elgg.shoutout.resetFileUploader();
 		
@@ -60,6 +61,11 @@ elgg.shoutout.handleAttachmentDelete = function(event) {
 	return false;
 }
 
+elgg.shoutout.removeAttachedEntity = function(event) {
+	$('.shoutout-attached-entity-wrapper').remove();
+	$('#shoutout-attached-guid').val(0);
+}
+
 elgg.shoutout.handleDelete = function(event) {
 	var confirmText = $(this).attr('rel') || elgg.echo('question:areyousure');
 	if (confirm(confirmText)) {
@@ -94,7 +100,13 @@ elgg.shoutout.handlePost = function() {
 			attachments.push({timeBit: c.filter('.qq-upload-dir').html(), fileName: c.filter('.qq-upload-file').html()});
 		}
 	});
-	var content = {attachments: attachments, text: $("[name='shoutout_text']").val(), guid: $('#shoutout-guid').val()};
+	var content = {
+		attachments: attachments, 
+		text: $("[name='shoutout_text']").val(), 
+		guid: $('#shoutout-guid').val(), 
+		attached_guid: $('#shoutout-attached-guid').val(),
+		access_id: $('#shoutout-access-id').val(), 
+	};
 	elgg.action('action/shoutout/edit', {data: content, success : 
 			function (response) {
 				if (response.success) {
@@ -104,14 +116,17 @@ elgg.shoutout.handlePost = function() {
 					} else {
 
 						// reload activity view
-						$('#shoutout-content-area').load(elgg.get_site_url()+'shoutout/activity_river_view');
+						//$('#shoutout-content-area').load(elgg.get_site_url()+'shoutout/activity_river_view');
 						
 						// reset form
-						$('[name="shoutout_text"]').val('');
-						$("#shoutout-countdown-remaining").html('500');
-						$('.qq-upload-list').children().remove();
-						$('.shoutout-number-of-attachments').val(0);
-						elgg.shoutout.resetFileUploader();
+						//$('[name="shoutout_text"]').val('');
+						//$("#shoutout-countdown-remaining").html('500');
+						//$('.qq-upload-list').children().remove();
+						//$('.shoutout-attached-entity-wrapper').remove();
+						//$('.shoutout-number-of-attachments').val(0);
+						//elgg.shoutout.resetFileUploader();
+						
+						elgg.forward('activity');
 
 						// show success message					
 						elgg.system_message(response.msg);
