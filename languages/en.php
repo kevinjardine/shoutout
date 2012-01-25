@@ -6,6 +6,7 @@
 $english = array(
 	'item:object:shoutout' => "Shoutouts",
 	'shoutout:shoutouts' => "Shoutouts",
+	'shoutout:entity_title' => "Shoutout",
 	'shoutout:attach_button' => "Attach a file",
 	'shoutout:post_button' => "Post",
 	'shoutout:listing_title' => "Shoutouts",

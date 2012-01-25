@@ -75,6 +75,7 @@ function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments) {
 		$shoutout->subtype = 'shoutout';
 		$shoutout->owner_guid = $user_guid;
 		$shoutout->container_guid = $user_guid;
+		$shoutout->title = elgg_echo('shoutout:entity_title');
 	}
 	$shoutout->access_id = $access_id;
 	$shoutout->description = $text;
