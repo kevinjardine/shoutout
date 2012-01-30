@@ -37,10 +37,10 @@ function shoutout_init() {
 	elgg_register_page_handler('shoutout', 'shoutout_page_handler');
 	elgg_register_page_handler('activity', 'shoutout_page_handler');
 
-	// add edit and delete in river menu for shoutouts
+	// link elgg-river-timestamp to the shoutout item page
 	elgg_register_plugin_hook_handler('view', 'river/elements/body', 'shoutout_river_add_link');
 	
-	// link elgg-river-timestamp to the shoutout item page
+	// add edit and delete in river menu for shoutouts
 	elgg_register_plugin_hook_handler('register', 'menu:river', 'shoutout_river_menu_setup');
 	
 	elgg_register_entity_type('object','shoutout');
