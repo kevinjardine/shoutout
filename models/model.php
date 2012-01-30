@@ -24,6 +24,10 @@ function shoutout_get_view_page($guid) {
 	if (elgg_instanceof($shoutout,'object','shoutout')) {
 		$content = '<div class="shoutout-view-wrapper">'.parse_urls($shoutout->description).'</div>';
 		$content .= shoutout_get_attachment_listing($shoutout);
+		$list = shoutout_list_attached_entities($shoutout);
+		if ($list) {
+			$content .= '<br />'.$list;
+		}
 		$content .= elgg_view_comments($shoutout);
 	} else {
 		$content = elgg_echo('shoutout:bad_shoutout');
@@ -656,4 +660,32 @@ if(!function_exists('mime_content_type')) {
             return 'application/octet-stream';
         }
     }
+}
+
+// right now only polls can be attached, but this could be expanded
+function shoutout_list_attached_entities($shoutout) {
+	$options = array(
+		'relationship_guid'=>$shoutout->guid,
+		'relationship' => 'shoutout_attached_entity',
+		'limit' => 1,
+	);
+	$entities = elgg_get_entities_from_relationship($options);
+	if ($entities) {
+		$entity = $entities[0];
+		if (elgg_instanceof($entity,'object','poll')) {
+			if (elgg_plugin_exists('polls')) {
+				if ($user_guid = elgg_get_logged_in_user_guid()) {
+					elgg_load_library('elgg:polls');
+					$can_vote = !polls_check_for_previous_vote($entity, $user_guid);
+					if ($can_vote) {
+						return elgg_view('polls/poll_widget',array('entity'=>$entity));
+					} else {
+						return elgg_echo('shoutout:see_poll_results').elgg_view('polls/summary_link',array('entity'=>$entity));
+					}
+				} else {
+					return elgg_echo('shoutout:login_or_see_poll_results').elgg_view('polls/summary_link',array('entity'=>$entity));
+				}
+			}
+		}
+	}
 }
