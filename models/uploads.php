@@ -125,8 +125,6 @@ class qqFileUploader {
             return array('error' => 'File is too large');
         }
         
-        error_log("File name:".$this->file->getName());
-        
         $pathinfo = pathinfo($this->file->getName());
         $filename = $pathinfo['filename'];
         //$filename = md5(uniqid());

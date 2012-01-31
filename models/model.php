@@ -456,7 +456,6 @@ function shoutout_download_attachment($annotation_id) {
 }
 
 function shoutout_get_file_icon_url($mime) {
-	error_log("mime type: $mime");
 	$mapping = array(
 		'application/excel' => 'excel',
 		'application/msword' => 'word',
@@ -507,19 +506,15 @@ function shoutout_get_file_icon_url($mime) {
 
 function shoutout_determine_mime_type($full_file_path) {
 	$mime_type = '';
-	error_log("Full file path: $full_file_path");
 	if (function_exists('finfo_file') && defined('FILEINFO_MIME_TYPE')) {
-		error_log('using finfo_file');
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
 		if ($finfo) {
 			$mime_type = finfo_file($finfo, $full_file_path, FILEINFO_MIME);
 		}		
 		finfo_close($finfo);
 	} else if (function_exists('mime_content_type')) {
-		error_log('using mime_content_type');
 		$mime_type = mime_content_type($full_file_path);
 	} else {
-		error_log('failed to find mime type functions');
 		$pathinfo = pathinfo($full_file_path);
 		$ext = $pathinfo['extension'];
 		if (in_array($ext, array('png','jpg','jpeg','gif'))) {
