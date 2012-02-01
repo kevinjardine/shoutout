@@ -38,7 +38,7 @@ function shoutout_init() {
 	elgg_register_page_handler('activity', 'shoutout_page_handler');
 
 	// link elgg-river-timestamp to the shoutout item page
-	elgg_register_plugin_hook_handler('view', 'river/elements/body', 'shoutout_river_add_link');
+	elgg_register_plugin_hook_handler('view', 'river/elements/layout', 'shoutout_river_add_link');
 	
 	// add edit and delete in river menu for shoutouts
 	elgg_register_plugin_hook_handler('register', 'menu:river', 'shoutout_river_menu_setup');
@@ -191,6 +191,11 @@ function shoutout_river_add_link($hook, $type, $return, $params) {
 	            $return = preg_replace_callback(
 	                '@(<span class="elgg-river-timestamp">)([^/]+)(</span>)@',
 	            	'shoutout_add_link',
+	                $return);
+	            // allow styling shoutouts differently
+	            $return = str_replace(
+	                ' elgg-river-item',
+	                ' shoutout-river-item elgg-river-item',
 	                $return);
 	        }
 	    }
