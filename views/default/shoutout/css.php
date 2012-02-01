@@ -98,3 +98,19 @@
 	margin-left: 10px;
 	float: none;
 }
+
+<?php // pull filters onto the same line ?>
+.elgg-river-layout .elgg-input-dropdown {
+    margin-bottom: -20px;
+}
+
+<?php // more prominent shoutout messages ?>
+.shoutout-river-item .elgg-river-message {
+    border: 0;
+    font-size: 100%;
+    padding-left: 10px;
+    margin: 5px 0;
+}
+.shoutout-river-item .elgg-river-summary {
+    color: #999;
+}
