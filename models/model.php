@@ -499,7 +499,7 @@ function shoutout_get_file_icon_url($mime) {
 		$ext = '';
 	}
 	
-	$url = "mod/file/graphics/icons/{$type}{$ext}.gif";
+	$url = elgg_get_site_url()."mod/file/graphics/icons/{$type}{$ext}.gif";
 	
 	return $url;
 }
