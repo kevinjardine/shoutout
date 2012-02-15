@@ -16,7 +16,7 @@ function shoutout_init() {
 
 	// add to the main css
 	elgg_extend_view('css/elgg', 'shoutout/css');
-	
+
 	// add extend link js to poll plugin
 	elgg_extend_view('object/poll','shoutout/add_link');
 
@@ -24,7 +24,7 @@ function shoutout_init() {
 	$js = elgg_get_simplecache_url('js', 'shoutout/js');
 	elgg_register_simplecache_view('js/shoutout/js');
 	elgg_register_js('elgg.shoutout', $js);
-	
+
 	$js = elgg_get_simplecache_url('js', 'shoutout/link');
 	elgg_register_simplecache_view('js/shoutout/link');
 	elgg_register_js('elgg.shoutout_link', $js);
@@ -39,12 +39,12 @@ function shoutout_init() {
 
 	// link elgg-river-timestamp to the shoutout item page
 	elgg_register_plugin_hook_handler('view', 'river/elements/layout', 'shoutout_river_add_link');
-	
+
 	// add edit and delete in river menu for shoutouts
 	elgg_register_plugin_hook_handler('register', 'menu:river', 'shoutout_river_menu_setup');
-	
+
 	elgg_register_entity_type('object','shoutout');
-	
+
 	// override the default url to view a blog object
 	elgg_register_entity_url_handler('object', 'shoutout', 'shoutout_url_handler');
 
@@ -54,7 +54,7 @@ function shoutout_init() {
 	elgg_register_action('shoutout/delete', "$action_path/delete.php");
 	elgg_register_action('shoutout/attach/add', "$action_path/attach/add.php");
 	elgg_register_action('shoutout/attach/delete', "$action_path/attach/delete.php");
-	
+
 	// over-ride comments action
 	elgg_register_action('comments/add', elgg_get_plugins_path() . 'shoutout/actions/comments/add.php');
 }
@@ -168,7 +168,7 @@ function shoutout_river_menu_setup($hook, $type, $return, $params) {
 				'text' => elgg_view_icon('delete'),
 				'title' => elgg_echo('delete:this'),
 				'href' => "action/shoutout/delete?guid={$object->guid}",
-//				'confirm' => elgg_echo('deleteconfirm'),
+			//				'confirm' => elgg_echo('deleteconfirm'),
 				'link_class' => 'shoutout-delete-link',
 				'priority' => 300,
 			);
@@ -182,25 +182,25 @@ function shoutout_river_menu_setup($hook, $type, $return, $params) {
 function shoutout_river_add_link($hook, $type, $return, $params) {
 	global $shoutout_closure_hack_url;
 	if (isset($params['vars']['item'])) {
-	    $item = $params['vars']['item'];
-	    if ($item instanceof ElggRiverItem) {
-	        /* @var ElggRiverItem $item  */
-	        $entity = $item->getObjectEntity();
-	        if (elgg_instanceof($entity, 'object', 'shoutout')) {
-	            $shoutout_closure_hack_url = $entity->getURL();
-	            $return = preg_replace_callback(
+		$item = $params['vars']['item'];
+		if ($item instanceof ElggRiverItem) {
+			/* @var ElggRiverItem $item  */
+			$entity = $item->getObjectEntity();
+			if (elgg_instanceof($entity, 'object', 'shoutout')) {
+				$shoutout_closure_hack_url = $entity->getURL();
+				$return = preg_replace_callback(
 	                '@(<span class="elgg-river-timestamp">)([^/]+)(</span>)@',
 	            	'shoutout_add_link',
-	                $return);
-	            // allow styling shoutouts differently
-	            $return = str_replace(
+				$return);
+				// allow styling shoutouts differently
+				$return = str_replace(
 	                ' elgg-river-item',
 	                ' shoutout-river-item elgg-river-item',
-	                $return);
-	        }
-	    }
-	} 
-	return $return;	
+				$return);
+			}
+		}
+	}
+	return $return;
 }
 
 function shoutout_add_link ($m) {
@@ -209,5 +209,5 @@ function shoutout_add_link ($m) {
                         'href' => $shoutout_closure_hack_url,
                         'text' => $m[2],
 	));
-    return $m[1] . $link . $m[3];
+	return $m[1] . $link . $m[3];
 }

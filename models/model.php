@@ -254,12 +254,12 @@ function shoutout_show_temporary_attachment($guid,$time_bit,$ofn) {
 		$pathinfo = pathinfo($ofn);
         $fn = $pathinfo['filename'];
         $ext = $pathinfo['extension'];
-        header("Content-Type: image/jpg");
+        header("Content-Type: image/jpeg");
 		header("Content-Disposition: inline; filename=\"$fn.jpg\"");
         if (in_array($ext, array('png','jpg','jpeg','gif'))) {		
 			$content = file_get_contents(elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn.'.jpg');
         }
-		//echo elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn;
+		//echo elgg_get_data_path().shoutout_attach_make_file_matrix($guid).'/attachments/'.$time_bit.'/thumb'.$fn.'.jpg';
 		$splitString = str_split($content, 8192);
 		foreach($splitString as $chunk) {
 			echo $chunk;

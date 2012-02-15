@@ -617,13 +617,22 @@ qq.extend(qq.FileUploader.prototype, {
         qq.FileUploaderBasic.prototype._onComplete.apply(this, arguments);
 
         // mark completed
-        var item = this._getItemByFileId(id);            
+        var item = this._getItemByFileId(id);          
         qq.remove(this._find(item, 'cancel'));
         qq.remove(this._find(item, 'spinner'));
         //var e = this._find(item, 'dir');
         //qq.setText(e,result.uploadDirectory);
         
-        if (result.success){
+        if (result.success) {
+            // remove the iframe suffix if necessary
+            if (typeof id != "number") {
+	            var iframe_suffix = "qq-upload-handler-iframe";
+	            var ic = iframe_suffix.length;
+	            if (id.substring(0,ic) == iframe_suffix) {
+	                id = parseInt(id.substring(ic));
+	            }
+            }
+            
             qq.addClass(item, this._classes.success);
             var id2 = id+1 + parseInt($('#shoutout-number-of-attachments').val());
             //alert($('.qq-upload-list').get(id));
@@ -1079,7 +1088,7 @@ qq.extend(qq.UploadHandlerForm.prototype, {
             response = eval("(" + doc.body.innerHTML + ")");
         } catch(err){
             response = {};
-        }        
+        }   
 
         return response;
     },
@@ -1143,7 +1152,6 @@ qq.UploadHandlerXhr = function(o){
 qq.UploadHandlerXhr.isSupported = function(){
     var input = document.createElement('input');
     input.type = 'file';        
-    
     return (
         'multiple' in input &&
         typeof File != "undefined" &&
