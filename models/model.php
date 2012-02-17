@@ -402,7 +402,8 @@ function shoutout_attachment_listing($entity_guid,$annotation) {
 		if (in_array($ext, array('png','jpg','jpeg','gif'))) {
 			$thumb = $url.'shoutout/show_attachment_image/'.$annotation->id;
 		} else {
-			$mime_type = shoutout_determine_mime_type($ofn);
+			$full_file_path = elgg_get_data_path().shoutout_attach_make_file_matrix($annotation->owner_guid).'/attachments/'.$time_bit.'/'.$ofn;
+			$mime_type = shoutout_determine_mime_type($full_file_path);
 			$thumb = shoutout_get_file_icon_url($mime_type);
 		}			
 		$image = '<img class="shoutout-attachment-image" '.$title_bit.'src="'.$thumb.'">';
