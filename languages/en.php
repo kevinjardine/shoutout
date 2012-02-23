@@ -31,6 +31,7 @@ $english = array(
 	'shoutout:settings:whitelist:title' => "Permitted file extensions",
 	'shoutout:settings:size_limit:title' => "Maximum attachment size (bytes)",
 	'shoutout:login' => "Log in to post your own shoutout.",
+	'shoutout:more' => "more",
 
 	// poll support
 	'shoutout:add_poll' => "Shoutout this poll!",
