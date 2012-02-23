@@ -43,6 +43,7 @@
 #shoutout-bottom-wrapper {
 	width: 400px;
 	padding-bottom: 10px;
+	margin-top: 2px;
 }
 
 #shoutout-countdown-wrapper {
@@ -113,4 +114,14 @@
 }
 .shoutout-river-item .elgg-river-summary {
     color: #999;
+}
+
+.shoutout-countdown-exceeded {
+	color: #FF0000;
+}
+
+.shoutout-post-button.elgg-state-disabled {
+	background: #999;
+	border-color: #999;
+	cursor: default;
 }

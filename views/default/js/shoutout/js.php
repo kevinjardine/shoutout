@@ -7,6 +7,8 @@ elgg.shoutout.init = function () {
 	$('.shoutout-countdown').each(elgg.shoutout.handleCountdownFieldsUpdate);
 	$('.shoutout-countdown').change(elgg.shoutout.handleCountdownFieldsUpdate);
 	$('.shoutout-countdown').keyup(elgg.shoutout.handleCountdownFieldsUpdate);
+	$('.shoutout-countdown').bind('paste', elgg.shoutout.handleCountdownFieldsUpdate);
+	$('.shoutout-countdown').bind('input', elgg.shoutout.handleCountdownFieldsUpdate);	
 
 	$('.shoutout-post-button').click(elgg.shoutout.handlePost);
 	$('.shoutout-delete-link').live('click',elgg.shoutout.handleDelete);
@@ -90,6 +92,15 @@ elgg.shoutout.handleCountdownFieldsUpdate = function() {
 	var current_length = $(this).val().length;
 	var remaining = max-current_length;
 	$("#shoutout-countdown-remaining").html(remaining);
+	if (remaining < 0) {
+		$("#shoutout-countdown-remaining").addClass('shoutout-countdown-exceeded');
+		$('.shoutout-post-button').attr('disabled','disabled');	
+		$('.shoutout-post-button').addClass('elgg-state-disabled');	
+	} else {
+		$("#shoutout-countdown-remaining").removeClass('shoutout-countdown-exceeded');
+		$('.shoutout-post-button').removeClass('elgg-state-disabled');
+		$('.shoutout-post-button').removeAttr('disabled');		
+	}
 }
 
 elgg.shoutout.handlePost = function() {
