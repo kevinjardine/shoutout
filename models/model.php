@@ -322,7 +322,9 @@ function shoutout_get_activity() {
 			$title = $river_all_title;
 			$page_filter = 'all';
 			break;
-	}	
+	}
+	
+	$options['base_url'] = 'activity';
 	
 	$activity = elgg_list_river($options);
 	
