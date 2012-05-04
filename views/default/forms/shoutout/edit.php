@@ -1,7 +1,7 @@
 <?php
 elgg_load_library('elgg:shoutout');
 $shoutout = $vars['entity'];
-if ($shoutout) {
+if ($shoutout instanceof ElggObject) {
 	$value = $shoutout->description;
 	$guid = $shoutout->guid;
 	$access_id = $shoutout->access_id;
