@@ -20,6 +20,28 @@ $body .= elgg_view('input/radio',array('name'=>'params[override_activity]','valu
 
 $body .= '<br />';
 
+$shoutout_video_add = elgg_get_plugin_setting('video_add', 'shoutout');
+if (!$shoutout_video_add) {
+	$shoutout_video_add = 'no';
+}
+
+$body .= elgg_echo('shoutout:settings:video_add:title');
+$body .= '<br />';
+$body .= elgg_view('input/radio',array('name'=>'params[video_add]','value'=>$shoutout_video_add,'options'=>$yn_options));
+
+$body .= '<br />';
+
+$shoutout_wall = elgg_get_plugin_setting('wall', 'shoutout');
+if (!$shoutout_wall) {
+	$shoutout_wall = 'no';
+}
+
+$body .= elgg_echo('shoutout:settings:wall:title');
+$body .= '<br />';
+$body .= elgg_view('input/radio',array('name'=>'params[wall]','value'=>$shoutout_wall,'options'=>$yn_options));
+
+$body .= '<br />';
+
 $shoutout_white_list = elgg_get_plugin_setting('whitelist', 'shoutout');
 if (!$shoutout_white_list) {
 	$shoutout_white_list = 'gif, png, jpg, jpeg';

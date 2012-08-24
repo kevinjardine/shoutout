@@ -26,12 +26,16 @@ $english = array(
 	'river:create:object:shoutout' => "%s said",
 	'shoutout:settings:yes' => "Yes",
 	'shoutout:settings:no' => "No",
+	'shoutout:settings:video_add:title' => "Allow attaching Youtube videos",
+	'shoutout:settings:wall:title' => "Add shoutout wall link to profiles",
 	'shoutout:settings:overide_activity:title' => "Overide title and default filter on Activity page",
 	'shoutout:settings:max_attachments:title' => "Number of attachments allowed per shoutout (-1 for no limit)",
 	'shoutout:settings:whitelist:title' => "Permitted file extensions",
 	'shoutout:settings:size_limit:title' => "Maximum attachment size (bytes)",
 	'shoutout:login' => "Log in to post your own shoutout.",
 	'shoutout:more' => "more",
+	'shoutout:river:wall' => "Activity wall",
+	'shoutout:wall' => "Wall",
 
 	// poll support
 	'shoutout:add_poll' => "Shoutout this poll!",

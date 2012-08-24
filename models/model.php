@@ -306,6 +306,8 @@ function shoutout_get_activity() {
 		}
 	}
 	
+	$options['base_url'] = 'activity';
+	
 	switch ($page_type) {
 		case 'mine':
 			$title = $river_mine_title;
@@ -318,13 +320,27 @@ function shoutout_get_activity() {
 			$options['relationship_guid'] = elgg_get_logged_in_user_guid();
 			$options['relationship'] = 'friend';
 			break;
+		case 'wall':
+			// shows current user *and* friends
+			$title = elgg_echo('shoutout:river:wall');
+			$page_filter = 'wall';
+			$user = elgg_get_logged_in_user_entity();
+			if ($user) {
+				$friends = $user->getFriends('',0);
+				$guids = array($user->guid);
+				foreach ($friends as $friend) {
+					$guids[] = $friend->guid;
+				}
+				$options['subject_guids'] = $guids;
+			}
+			$options['base_url'] = 'shoutout/wall';
+			break;
 		default:
 			$title = $river_all_title;
 			$page_filter = 'all';
 			break;
 	}
 	
-	$options['base_url'] = 'activity';
 	
 	$activity = elgg_list_river($options);
 	
@@ -337,6 +353,13 @@ function shoutout_get_activity_page($attached_guid = 0) {
 	 * Main activity stream list page
 	 */
 	
+	if ($owner_guid) {
+		$owner = get_entity($owner_guid);
+		if (elgg_instanceof($owner,'user')) {
+			elgg_set_page_owner_guid($owner_guid);
+		}
+	}
+	
 	elgg_load_library('elgg:shoutout:uploads');
 	elgg_load_js('elgg.shoutout');
 	elgg_load_js('qq.fileuploader');
@@ -344,6 +367,7 @@ function shoutout_get_activity_page($attached_guid = 0) {
 	$activity = shoutout_get_activity();
 
 	$activity_bit = '<div id="shoutout-content-area">'.$activity['content'].'</div>';
+	$page_type = get_input('page_type');
 	
 	if (elgg_is_logged_in()) {
 		$form_vars = array('id' => 'shoutout-form');
@@ -355,8 +379,11 @@ function shoutout_get_activity_page($attached_guid = 0) {
 	}
 	
 	$sidebar = elgg_view('core/river/sidebar');
-	
-	$filter_tabs = elgg_view('page/layouts/content/filter',array('filter_context' => $activity['page_filter']));
+	if ($page_type != 'wall') {
+		$filter_tabs = elgg_view('page/layouts/content/filter',array('filter_context' => $activity['page_filter']));
+	} else {
+		$filter_tabs = '';
+	}
 	$filter_dropdown = $filter = elgg_view('core/river/filter', array('selector' => $activity['selector']));
 	
 	$params = array(

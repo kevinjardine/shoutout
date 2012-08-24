@@ -45,8 +45,14 @@ function shoutout_init() {
 
 	elgg_register_entity_type('object','shoutout');
 
-	// override the default url to view a blog object
+	// override the default url to view a showout object
 	elgg_register_entity_url_handler('object', 'shoutout', 'shoutout_url_handler');
+	
+	// optionally add wall link to owner block
+	$shoutout_wall = elgg_get_plugin_setting('wall', 'shoutout');
+	if ($shoutout_wall == 'yes') {
+		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'shoutout_owner_block_menu');
+	}
 
 	// register actions
 	$action_path = elgg_get_plugins_path() . 'shoutout/actions/shoutout';
@@ -88,13 +94,16 @@ function shoutout_page_handler($page) {
 			echo shoutout_get_activity_page($page[1]);
 			break;
 		case 'owner':
-			// TODO: get this working
 			set_input('page_type','mine');
 			echo shoutout_get_activity_page();
 			break;
 		case 'friends':
-			// TODO: get this working
 			set_input('page_type','friends');
+			echo shoutout_get_activity_page();
+			break;
+		case 'wall':
+			set_input('page_type','wall');
+			set_input('origin','shoutout/wall');
 			echo shoutout_get_activity_page();
 			break;
 		case 'activity_river_view':
@@ -105,6 +114,11 @@ function shoutout_page_handler($page) {
 			echo shoutout_get_view_page($page[1]);
 			break;
 		case 'edit':
+			if (isset($page[2]) && $page[2] == 'wall') {
+				set_input('origin','shoutout/wall');
+			} else {
+				set_input('origin','shoutout/all');
+			}
 			echo shoutout_get_edit_page($page[1]);
 			break;
 		case 'comment':
@@ -151,29 +165,53 @@ function shoutout_url_handler($entity) {
 function shoutout_river_menu_setup($hook, $type, $return, $params) {
 	$item = $params['item'];
 	if ($item) {
+		$page_type = get_input('page_type');
 		$object = $item->getObjectEntity();
 		if (elgg_instanceof($object,'object','shoutout') && $object->canEdit()) {
 			// edit link
+			$href = "shoutout/edit/{$object->guid}";
+			if ($page_type == 'wall') {
+				$href .= '/wall';
+			}
 			$options = array(
 				'name' => 'edit',
 				'text' => elgg_echo('edit'),
 				'title' => elgg_echo('edit:this'),
-				'href' => "shoutout/edit/{$object->guid}",
+				'href' => $href,
 				'priority' => 200,
 			);
 			$return[] = ElggMenuItem::factory($options);
 			// delete link
+			$href = "action/shoutout/delete?guid={$object->guid}";
+			if ($page_type == 'wall') {
+				$href .= '&origin=wall';
+			}
 			$options = array(
 				'name' => 'delete',
 				'text' => elgg_view_icon('delete'),
 				'title' => elgg_echo('delete:this'),
-				'href' => "action/shoutout/delete?guid={$object->guid}",
+				'href' => $href,
 			//				'confirm' => elgg_echo('deleteconfirm'),
 				'link_class' => 'shoutout-delete-link',
 				'priority' => 300,
 			);
 			$return[] = ElggMenuItem::factory($options);
 		}
+	}
+
+	return $return;
+}
+
+/**
+ * Add a menu item to an ownerblock
+ */
+function shoutout_owner_block_menu($hook, $type, $return, $params) {
+	$e = $params['entity'];
+	// show the wall link if the user is looking at his/her own owner block
+	if (elgg_instanceof($e, 'user') && ($e->guid == elgg_get_logged_in_user_guid())) {
+		$url = "shoutout/wall";
+		$item = new ElggMenuItem('shoutout:wall', elgg_echo('shoutout:wall'), $url);
+		$return[] = $item;
 	}
 
 	return $return;

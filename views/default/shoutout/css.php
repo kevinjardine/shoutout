@@ -125,3 +125,7 @@
 	border-color: #999;
 	cursor: default;
 }
+
+#shoutout-content-area {
+	padding-top: 30px;
+}

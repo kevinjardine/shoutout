@@ -116,14 +116,15 @@ elgg.shoutout.handlePost = function() {
 		text: $("[name='shoutout_text']").val(), 
 		guid: $('#shoutout-guid').val(), 
 		attached_guid: $('#shoutout-attached-guid').val(),
-		access_id: $('#shoutout-access-id').val(), 
+		access_id: $('#shoutout-access-id').val(),
+		origin: $('#shoutout-origin').val(), 
 	};
 	elgg.action('action/shoutout/edit', {data: content, success : 
 			function (response) {
 				if (response.success) {
 					var guid = $('#shoutout-guid').val();
 					if (guid > 0) {
-						elgg.forward('shoutout/all');
+						elgg.forward(response.forward);
 					} else {
 
 						// reload activity view
@@ -136,11 +137,11 @@ elgg.shoutout.handlePost = function() {
 						//$('.shoutout-attached-entity-wrapper').remove();
 						//$('.shoutout-number-of-attachments').val(0);
 						//elgg.shoutout.resetFileUploader();
-						
-						elgg.forward('activity');
 
 						// show success message					
 						elgg.system_message(response.msg);
+
+						elgg.forward(response.forward);
 					}
 				} else {
 					elgg.register_error(response.msg);

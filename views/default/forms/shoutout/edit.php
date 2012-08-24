@@ -1,5 +1,6 @@
 <?php
 elgg_load_library('elgg:shoutout');
+$origin = get_input('origin','shoutout/all');
 $shoutout = $vars['entity'];
 if ($shoutout) {
 	$value = $shoutout->description;
@@ -22,7 +23,12 @@ if ($shoutout) {
 	$guid = 0;
 	$count = 0;
 	$attached_guid = $vars['attached_guid'];
-	$access_id = ACCESS_DEFAULT;
+	$page_type = get_input('page_type');
+	if ($page_type == 'wall') {
+		$access_id = ACCESS_FRIENDS;
+	} else {
+		$access_id = ACCESS_DEFAULT;
+	}
 }
 $body = elgg_view('input/plaintext',array('class'=>'shoutout-countdown','name'=>'shoutout_text', 'value'=>$value));
 $body .= <<< __HTML
@@ -62,5 +68,6 @@ $body .= elgg_view('shoutout/view_attached',array('attached_guid'=>$attached_gui
 $body .= elgg_view('input/hidden',array('id'=>"shoutout-countdown-max",'value'=>500));
 $body .= elgg_view('input/hidden',array('id'=>"shoutout-number-of-attachments",'value'=>$count));
 $body .= elgg_view('input/hidden',array('name'=>'guid','id'=>"shoutout-guid",'value'=>$guid));
+$body .= elgg_view('input/hidden',array('name'=>'origin','id'=>"shoutout-origin",'value'=>$origin));
 $body .= elgg_view('input/hidden',array('name'=>'attached_guid','id'=>"shoutout-attached-guid",'value'=>$attached_guid));
 echo $body;
