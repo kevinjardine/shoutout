@@ -14,6 +14,12 @@ elgg.shoutout.init = function () {
 	$('.shoutout-delete-link').live('click',elgg.shoutout.handleDelete);
 	$('.shoutout-attachment-delete').live('click',elgg.shoutout.handleAttachmentDelete);
 	$('.shoutout-attached-entity-remove').live('click',elgg.shoutout.removeAttachedEntity);
+	$('#shoutout-video-add-button').click(elgg.shoutout.showVideoSection);
+	if ($('#shoutout-video-url').val() != '') {
+		elgg.shoutout.showVideoSection();
+	}
+	$('#shoutout-video-delete-button').click(elgg.shoutout.deleteVideo);
+	$('.shoutout-video-thumbnail').click(elgg.shoutout.watchVideo);
 
 	elgg.shoutout.resetFileUploader();
 		
@@ -117,7 +123,8 @@ elgg.shoutout.handlePost = function() {
 		guid: $('#shoutout-guid').val(), 
 		attached_guid: $('#shoutout-attached-guid').val(),
 		access_id: $('#shoutout-access-id').val(),
-		origin: $('#shoutout-origin').val(), 
+		origin: $('#shoutout-origin').val(),
+		video_url: $('#shoutout-video-url').val()
 	};
 	elgg.action('action/shoutout/edit', {data: content, success : 
 			function (response) {
@@ -148,6 +155,23 @@ elgg.shoutout.handlePost = function() {
 				}
 			}
 	});
+}
+
+elgg.shoutout.showVideoSection = function() {
+	$('#shoutout-video-add-button').hide();
+	$('#shoutout-video-input-wrapper').show();
+}
+elgg.shoutout.deleteVideo = function() {
+	if (confirm(elgg.echo('shoutout:video:delete:confirm'))) {
+		$('#shoutout-video-url').val('');
+		$('#shoutout-video-input-wrapper').hide();
+		$('#shoutout-video-add-button').show();
+	}
+}
+elgg.shoutout.watchVideo = function() {
+	var guid = $(this).attr('rel');
+	$.fancybox({'href':elgg.get_site_url()+'shoutout/watch/'+guid});
+	return false;
 }
 
 elgg.register_hook_handler('init', 'system', elgg.shoutout.init);

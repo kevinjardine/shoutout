@@ -53,6 +53,13 @@ function shoutout_init() {
 	if ($shoutout_wall == 'yes') {
 		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'shoutout_owner_block_menu');
 	}
+	
+	// optionally support video attachments
+	$shoutout_video_add = elgg_get_plugin_setting('video_add', 'shoutout');
+	if ($shoutout_video_add == 'yes') {
+		elgg_register_library('elgg:shoutout:video', elgg_get_plugins_path() . 'shoutout/models/video.php');
+		elgg_register_plugin_hook_handler('shoutout:video:preprocess', 'url', 'shoutout_video_preprocess_url');
+	}
 
 	// register actions
 	$action_path = elgg_get_plugins_path() . 'shoutout/actions/shoutout';
@@ -136,6 +143,9 @@ function shoutout_page_handler($page) {
 		case 'get_file_uploader_bit':
 			echo shoutout_get_file_uploader_bit($page[1]);
 			break;
+		case 'watch':
+			echo elgg_view('shoutout/video_watch',array('guid'=>$page[1]));
+			break;
 		default:
 			echo shoutout_get_activity_page();
 			break;
@@ -215,6 +225,23 @@ function shoutout_owner_block_menu($hook, $type, $return, $params) {
 	}
 
 	return $return;
+}
+
+/**
+ * Prepend HTTP scheme if missing
+ * @param string $hook
+ * @param string $type
+ * @param string $returnvalue
+ * @param array $params
+ * @return string
+ */
+function shoutout_video_preprocess_url($hook, $type, $returnvalue, $params) {
+    $parsed = parse_url($returnvalue);
+    if (empty($parsed['host']) && ! empty($parsed['path']) && $parsed['path'][0] !== '/') {
+        // user probably forgot scheme
+        $returnvalue = 'http://' . $returnvalue;
+    }
+    return $returnvalue;
 }
 
 function shoutout_river_add_link($hook, $type, $return, $params) {

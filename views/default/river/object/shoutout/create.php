@@ -3,6 +3,8 @@
  * Shoutout river view.
  */
 
+// TODO: add video view
+
 elgg_load_library('elgg:shoutout');
 
 $object = $vars['item']->getObjectEntity();
@@ -13,6 +15,7 @@ if (substr($excerpt,strlen($excerpt)-3) == '...') {
 }
 
 $excerpt .= shoutout_get_attachment_listing($object);
+$excerpt .= shoutout_get_video_display($object);
 
 echo elgg_view('river/elements/layout', array(
 	'item' => $vars['item'],

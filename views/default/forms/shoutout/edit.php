@@ -1,4 +1,5 @@
 <?php
+// TODO: add video URL bit
 elgg_load_library('elgg:shoutout');
 $origin = get_input('origin','shoutout/all');
 $shoutout = $vars['entity'];
@@ -18,6 +19,7 @@ if ($shoutout) {
 	} else {
 		$attached_guid = 0;
 	}
+	$video_url = $shoutout->video_url;
 } else {
 	$value = '';
 	$guid = 0;
@@ -29,6 +31,7 @@ if ($shoutout) {
 	} else {
 		$access_id = ACCESS_DEFAULT;
 	}
+	$video_url = '';
 }
 $body = elgg_view('input/plaintext',array('class'=>'shoutout-countdown','name'=>'shoutout_text', 'value'=>$value));
 $body .= <<< __HTML
@@ -70,4 +73,30 @@ $body .= elgg_view('input/hidden',array('id'=>"shoutout-number-of-attachments",'
 $body .= elgg_view('input/hidden',array('name'=>'guid','id'=>"shoutout-guid",'value'=>$guid));
 $body .= elgg_view('input/hidden',array('name'=>'origin','id'=>"shoutout-origin",'value'=>$origin));
 $body .= elgg_view('input/hidden',array('name'=>'attached_guid','id'=>"shoutout-attached-guid",'value'=>$attached_guid));
+$shoutout_video_add = elgg_get_plugin_setting('video_add', 'shoutout');
+if ($shoutout_video_add == 'yes') {
+	$body .= '<div id="shoutout-video-wrapper">';
+	$body .= elgg_view('output/url',
+		array(
+			'id' => 'shoutout-video-add-button',
+			'href' => 'javascript:void(0)',
+			'class' => 'elgg-button elgg-button-action',
+			'text' => elgg_echo('shoutout:video_button')
+		)
+	);
+	$body .= '<span id="shoutout-video-input-wrapper">';
+	$body .= '<span id="shoutout-video-attached-label">'.elgg_echo('shoutout:video:attached').'</span>';
+	$body .= ' ';
+	$body .= elgg_view('input/text',array('id'=>'shoutout-video-url','name'=>'video_url','value'=>$video_url));
+	$body .= elgg_view('output/url',
+		array(
+			'id' => 'shoutout-video-delete-button',
+			'href' => 'javascript:void(0)',
+			'text' => elgg_view_icon('delete'),
+			'title' => elgg_echo('shoutout:video:delete:title'),
+		)
+	);
+	$body .= '</span>';
+	$body .= '</div>';
+}
 echo $body;

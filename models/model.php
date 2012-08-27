@@ -67,7 +67,8 @@ function shoutout_get_edit_page($guid) {
 	
 }
 
-function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments) {
+function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments,$video_url='') {
+	// TODO: handle video URL if any
 	$user_guid = elgg_get_logged_in_user_guid();
 	if ($guid) {
 		$shoutout = get_entity($guid);
@@ -83,6 +84,7 @@ function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments) {
 	}
 	$shoutout->access_id = $access_id;
 	$shoutout->description = $text;
+	shoutout_handle_video($shoutout,$video_url);
 	
 	if($shoutout->save()) {
 		if ($guid) {
@@ -109,6 +111,42 @@ function shoutout_edit($guid,$attached_guid, $text,$access_id,$attachments) {
 	} else {
 		return FALSE;
 	}
+}
+
+function shoutout_handle_video($shoutout,$video_url) {
+	// optionally support video attachments
+	$shoutout_video_add = elgg_get_plugin_setting('video_add', 'shoutout');
+	if ($shoutout_video_add == 'yes') {
+
+	    if (!$video_url) {
+	    	// remove video url and return
+	    	$shoutout->video_url = '';
+	    	return TRUE;
+	    }
+	    elgg_load_library('elgg:shoutout:video');
+	
+	    $video_url = elgg_trigger_plugin_hook('videolist:preprocess', 'url', NULL, $video_url);
+	
+		$parsedPlatform = videolist_parse_url($video_url);
+	
+		if (!$parsedPlatform) {
+			// TODO: do something appropriate here
+			//register_error(elgg_echo('shoutout:video:error:invalid_url'));
+			return FALSE;
+		}
+	    list ($parsed, $platform) = $parsedPlatform;
+	    $input = array_merge($parsed, $platform->getData($parsed));
+	    $input['videotype'] = $platform->getType();
+	    
+	    // add all video metadata except title and description to shoutout
+	    $shoutout->video_url = $video_url;
+	    unset($input['title']);
+		unset($input['description']);
+	    foreach($input as $k => $v) {
+	    	$shoutout->$k = $v;
+	    }
+	}
+	return TRUE;
 }
 
 function shoutout_attach_add($original_name) {
@@ -353,6 +391,9 @@ function shoutout_get_activity_page($attached_guid = 0) {
 	 * Main activity stream list page
 	 */
 	
+	elgg_load_js('lightbox');
+	elgg_load_css('lightbox');
+	
 	if ($owner_guid) {
 		$owner = get_entity($owner_guid);
 		if (elgg_instanceof($owner,'user')) {
@@ -398,6 +439,15 @@ function shoutout_get_activity_page($attached_guid = 0) {
 	
 	return elgg_view_page($title, $body);
 	
+}
+
+function shoutout_get_video_display($entity) {
+	$shoutout_video_add = elgg_get_plugin_setting('video_add', 'shoutout');
+	if ($shoutout_video_add == 'yes') {
+		if ($entity->video_url && $entity->thumbnail) {
+			return elgg_view('shoutout/video_thumbnail',array('entity'=>$entity));
+		}
+	}
 }
 
 function shoutout_get_attachment_listing($entity) {

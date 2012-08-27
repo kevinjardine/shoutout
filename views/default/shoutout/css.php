@@ -129,3 +129,16 @@
 #shoutout-content-area {
 	padding-top: 30px;
 }
+
+#shoutout-video-input-wrapper {
+	display: none;
+}
+
+#shoutout-video-url {
+	width: 500px;
+}
+
+#shoutout-video-attached-label {
+	font-weight: bold;
+}
+	
