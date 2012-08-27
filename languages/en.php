@@ -40,6 +40,7 @@ $english = array(
 	'shoutout:video:delete:title' => "Remove video",
 	'shoutout:video:delete:confirm' => "Are you sure that you want to remove this video?",
 	'shoutout:video:attached' => "Attached video url:",
+	'shoutout:video:play:title' => "Play video",
 
 	// poll support
 	'shoutout:add_poll' => "Shoutout this poll!",
